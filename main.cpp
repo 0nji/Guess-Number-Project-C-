@@ -4,6 +4,8 @@
 #include <ctime>
 #include <cstdlib>
 #include <fstream>
+#include <limits>
+#include <string>
 
 using namespace std;
 
@@ -51,7 +53,7 @@ void displayScores() {
         return;
     }
     sort(scores.begin(), scores.end(), [](const Score& a, const Score& b) {
-        return a.points > b.points;
+        return a.points < b.points;
     });
 
     cout << "_____High Scores_____" << endl;
@@ -59,6 +61,22 @@ void displayScores() {
         cout << i+1 << ". " << scores[i].name << " " << scores[i].points << " (" << scores[i].difficulty << ")" << endl;
     }
     cout << "_____________________" << endl;
+}
+
+int getValidInt() {
+    int value;
+
+    while (true) {
+        cin >> value;
+
+        if (cin.fail()) {
+            cin.clear();                
+            cin.ignore(10000, '\n'); 
+            cout << "Invalid input. Enter a number: ";
+        } else {
+            return value;
+        }
+    }
 }
 
 void playGame(){
@@ -71,7 +89,7 @@ void playGame(){
     cout << "2. Medium (1-100)\n";
     cout << "3. Hard (1-250)\n";
     cout << "Enter choice: ";
-    cin >> level;
+    level = getValidInt();
 
     if (level == 1) {
         maxNumber = 50;
@@ -93,7 +111,7 @@ void playGame(){
     while (true)
     {
         cout << "Attempt " << attempts + 1 << ": ";
-        cin >> guess;
+        guess = getValidInt();
         attempts++;
 
         if (guess < target) {
@@ -104,7 +122,8 @@ void playGame(){
             cout << "Congratulations! You've guessed the number " << target << " in " << attempts << " attempts!" << endl;
             string name;
             cout << "Enter your name: ";
-            cin >> name;
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            getline(cin, name);
 
             scores.push_back({name, attempts, difficulty});
             saveScore({name, attempts, difficulty});
@@ -124,17 +143,21 @@ int main() {
     int choice;
     do {
         cout << "1. Start Game\n";
-        cout << "2. High Scores\n";
+        if (!scores.empty()){
+            cout << "2. High Scores\n";
+        }
         cout << "3. Exit\n";
         cout << "Enter choice: ";
-        cin >> choice;
+        choice = getValidInt();
 
         switch (choice) {
             case 1:
                 playGame();
                 break;
             case 2:
-                displayScores();
+                if (!scores.empty())
+                    displayScores();
+            case 3:
                 break;
             default:
                 cout << "Invalid choice. Please try again." << endl;
